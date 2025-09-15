@@ -85,4 +85,4 @@ git push -u origin main
 
 Loom Video
 
-[Add Loom video link here]
+[https://www.loom.com/share/253c4d2df87c4848b84a6a33fa0c87c5?sid=b1c5d37c-ea41-416a-a582-f9921a24464f]
