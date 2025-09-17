@@ -1,61 +1,91 @@
-# 🚀 Getting started with Strapi
+# TASK-3: Dockerized Strapi, Postgres, and Nginx
 
-Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/dev-docs/cli) (CLI) which lets you scaffold and manage your project in seconds.
+This project sets up a complete, production-ready environment for a Strapi CMS application using Docker and Docker Compose. It includes:
 
-### `develop`
+* **Strapi**: The Strapi application container.
+* **PostgreSQL**: The database container.
+* **Nginx**: A reverse proxy container that exposes the Strapi application on port 80.
 
-Start your Strapi application with autoReload enabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-develop)
+All services are connected via a custom Docker bridge network named `strapi-net`.
 
-```
-npm run develop
-# or
-yarn develop
-```
+## Prerequisites
 
-### `start`
+* [Docker](https://www.docker.com/get-started)
+* [Docker Compose](https://docs.docker.com/compose/install/)
 
-Start your Strapi application with autoReload disabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-start)
+## File Structure
 
-```
-npm run start
-# or
-yarn start
-```
+.
+├── docker-compose.yml    # Main compose file for all services
+├── nginx/
+│   └── nginx.conf        # Nginx configuration for reverse proxy
+└── README.md             # This file
 
-### `build`
 
-Build your admin panel. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-build)
+*(Note: A `strapi-app` directory will be created automatically on the first run to persist your Strapi application code. A `postgres-data` volume will also be created for database persistence.)*
 
-```
-npm run build
-# or
-yarn build
-```
+## Setup and Installation
 
-## ⚙️ Deployment
+1.  **Create the Project Files:**
+    Create the `docker-compose.yml` file and the `nginx/nginx.conf` file in the structure shown above.
 
-Strapi gives you many possible deployment options for your project including [Strapi Cloud](https://cloud.strapi.io). Browse the [deployment section of the documentation](https://docs.strapi.io/dev-docs/deployment) to find the best solution for your use case.
+2.  **Important: Update Secrets:**
+    Open `docker-compose.yml` and change the following environment variables for the `strapi` service to secure your application:
+    * `JWT_SECRET`
+    * `ADMIN_JWT_SECRET`
 
-```
-yarn strapi deploy
-```
+3.  **Build and Run the Containers:**
+    From the root directory (where `docker-compose.yml` is located), run the following command:
 
-## 📚 Learn more
+    ```bash
+    docker-compose up -d --build
+    ```
 
-- [Resource center](https://strapi.io/resource-center) - Strapi resource center.
-- [Strapi documentation](https://docs.strapi.io) - Official Strapi documentation.
-- [Strapi tutorials](https://strapi.io/tutorials) - List of tutorials made by the core team and the community.
-- [Strapi blog](https://strapi.io/blog) - Official Strapi blog containing articles made by the Strapi team and the community.
-- [Changelog](https://strapi.io/changelog) - Find out about the Strapi product updates, new features and general improvements.
+    * `up`: Creates and starts the containers.
+    * `-d`: Runs the containers in detached mode (in the background).
+    * `--build`: Forces Docker to build the images (useful for the Strapi image on first run).
 
-Feel free to check out the [Strapi GitHub repository](https://github.com/strapi/strapi). Your feedback and contributions are welcome!
+4.  **First-Time Strapi Setup:**
+    The very first time you run this, the `strapi` container will:
+    * Detect that the `/srv/app` directory (mounted from `./strapi-app`) is empty.
+    * Run `strapi new .` to generate a new Strapi project inside the volume.
+    * Connect to the `postgres_db` container and set up the database.
 
-## ✨ Community
+    This process can take **2-5 minutes**. You can monitor the progress by running:
 
-- [Discord](https://discord.strapi.io) - Come chat with the Strapi community including the core team.
-- [Forum](https://forum.strapi.io/) - Place to discuss, ask questions and find answers, show your Strapi project and get feedback or just talk with other Community members.
-- [Awesome Strapi](https://github.com/strapi/awesome-strapi) - A curated list of awesome things related to Strapi.
+    ```bash
+    docker-compose logs -f strapi
+    ```
 
----
+    Wait until you see messages like `Server running at http://0.0.0.0:1337`.
 
-<sub>🤫 Psst! [Strapi is hiring](https://strapi.io/careers).</sub>
+## Accessing the Application
+
+Once the setup is complete, you can access your Strapi admin panel.
+
+* **URL**: [http://localhost/admin](http://localhost/admin)
+    *(Note: You are accessing `http://localhost` on port 80, and Nginx is proxying your request to the Strapi container on port 1337).*
+
+* **Action**: On your first visit, you will be prompted to create the first administrator account.
+
+## Managing the Environment
+
+* **To stop the services:**
+    ```bash
+    docker-compose down
+    ```
+
+* **To stop and remove data volumes (DANGER: This deletes all your data):**
+    ```bash
+    docker-compose down -v
+    ```
+
+* **To restart the services:**
+    ```bash
+    docker-compose restart
+    ```
+
+* **To view logs for all services:**
+    ```bash
+    docker-compose logs -f
+    ```
